@@ -104,7 +104,7 @@
             text-transform: uppercase;
         }
 
-        /* Новый блок описания */
+        /* Блок описания */
         .intro-text {
             font-family: 'Lora', serif;
             font-size: 1.05rem;
@@ -135,6 +135,7 @@
             flex-wrap: wrap;
         }
 
+        /* Основные кнопки */
         button {
             font-family: 'Manrope', sans-serif;
             background: var(--card-bg);
@@ -157,6 +158,63 @@
             color: #fff; 
             border-color: var(--accent);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* --- СТИЛИ ПЛЕЕРА --- */
+        .music-player {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: 0.3s ease;
+        }
+
+        .music-player:hover {
+            border-color: var(--accent);
+        }
+
+        .music-info {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-left: 5px;
+        }
+
+        /* Кнопки плеера (перезаписываем общие стили кнопок) */
+        .music-player .music-btn {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+            border-radius: 0;
+            min-width: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            box-shadow: none;
+            letter-spacing: 0;
+        }
+
+        .music-player .music-btn:hover {
+            transform: scale(1.1);
+            background: none;
+            border-color: transparent;
+            box-shadow: none;
         }
 
         .poems-container {
@@ -266,10 +324,25 @@
             .card { padding: 35px 25px; }
             .card-title { font-size: 1.4rem; }
             .card-content { font-size: 1rem; line-height: 1.7; }
+            
+            /* Адаптив плеера */
+            .music-player {
+                bottom: 20px;
+                left: 20px;
+                padding: 8px 15px;
+            }
         }
     </style>
 </head>
 <body data-theme="dark">
+
+    <div class="music-player">
+        <button class="music-btn" onclick="prevTrack()">«</button>
+        <button class="music-btn" id="play-pause" onclick="toggleMusic()">▶</button>
+        <button class="music-btn" onclick="nextTrack()">»</button>
+        <div class="music-info" id="track-name">Загрузка...</div>
+        <audio id="bg-audio"></audio>
+    </div>
 
     <div id="particles-container"></div>
 
@@ -438,6 +511,54 @@
             body.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
         }
 
+        /* --- ЛОГИКА ПЛЕЕРА --- */
+        const audio = document.getElementById('bg-audio');
+        const playBtn = document.getElementById('play-pause');
+        const trackLabel = document.getElementById('track-name');
+
+        const playlist = [
+            { title: "Wiosna — Katawa Shoujo", file: "wiosna.mp3" },
+            { title: "David Fenn — Ceramic Manor", file: "ceramic.mp3" },
+            { title: "4LS Sound Team — Jitter", file: "jitter.mp3" },
+            { title: "Between August and December — Blow With the Fires", file: "fires.mp3" }
+        ];
+
+        let currentTrackIndex = 0;
+
+        function loadTrack(index) {
+            const track = playlist[index];
+            audio.src = track.file;
+            trackLabel.innerText = track.title;
+        }
+
+        function toggleMusic() {
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerText = '⏸';
+            } else {
+                audio.pause();
+                playBtn.innerText = '▶';
+            }
+        }
+
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            loadTrack(currentTrackIndex);
+            audio.play();
+            playBtn.innerText = '⏸';
+        }
+
+        function prevTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrackIndex);
+            audio.play();
+            playBtn.innerText = '⏸';
+        }
+
+        audio.onended = nextTrack;
+        
+        // Запуск
+        loadTrack(currentTrackIndex);
         createParticles();
         renderPoems();
     </script>
